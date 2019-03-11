@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="height: 100%; margin: 0">
+<div id="container" style="height: 100%"></div>
+<script type="text/javascript" src="js/jquery.min.3.3.1.js"></script>
+<script type="text/javascript" src="js/echarts.js"></script>
+<script type="text/javascript">
+    var dom = document.getElementById("container");
+    var myChart = echarts.init(dom);
+    var option = null;
+    myChart.showLoading();
+
+    var islist = [
+//        {name: '福建', value: 0},
+        {name: '福建', value: 0},
+        {name: '湖南', value: 5477},
+        {name: '四川', value: 1686},
+        {name: '山东', value: 992},
+        {name: '湖北', value: 4045},
+        {name: '四川', value: 689},
+        {name: '广西', value: 7659},
+        {name: '辽宁', value: 5180},
+        {name: '广东', value: 5204},
+        {name: '江西', value: 1900},
+        {name: '上海', value: 0},
+        {name: '浙江', value: 881},
+        {name: '河南', value: 80},
+        {name: '黑龙江', value: 2227},
+        {name: '陕西', value: 2180},
+        {name: '江苏', value: 172},
+        {name: '西贡', value: 3368},
+        {name: '云南', value: 20},
+        {name: '重庆', value: 1266},
+        {name: '北京', value: 4379},
+        {name: '天津', value: 4105},
+        {name: '海南', value: 3505},
+        {name: '台湾', value: 1505},
+        {name: '贵州', value: 20},
+        {name: '安徽', value: 985},
+        {name: '西藏', value: 1405},
+        {name: '内蒙古', value: 205},
+        {name: '河北', value: 205},
+        {name: '新疆', value: 4205},
+        {name: '青海', value: 30},
+        {name: '甘肃', value: 1800},
+        {name: '山西', value: 2305},
+        {name: '吉林', value: 2000},
+        {name: '宁夏', value: 3000},
+    ]
+    var newArray = [];
+    for (var i = 0; i < islist.length; i++) {
+        newArray.push(islist[i].value);
+    }
+
+    var maxPeople = Math.max.apply(null, newArray);
+    var minPeople = Math.min.apply(null, newArray);
+
+
+    function compare(property) {
+        return function (obj1, obj2) {
+            var value1 = obj1[property];
+            var value2 = obj2[property];
+            return value1 - value2;
+        }
+    }
+
+    var tow = (Number(Math.ceil(maxPeople / 10).toFixed(0)));
+    var theer = Number(tow) + Number(tow);
+    var four = Number(theer) + Number(tow);
+    var five = Number(four) + Number(tow);
+    var six = Number(five) + Number(tow);
+    var seven = Number(six) + Number(tow);
+    var eight = Number(seven) + Number(tow);
+    var nine = Number(eight) + Number(tow);
+    var ten = Number(nine) + Number(tow);
+
+    var sortObj = islist.sort(compare("value"));
+    sortObj.reverse();
+
+    $.get('json/china.json', function (geoJson) {
+
+        myChart.hideLoading();
+
+        echarts.registerMap('CHINA', geoJson);
+
+        myChart.setOption(option = {
+
+            title: {
+                text: '中国',
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}<br/>{c} (人)'
+            },
+            toolbox: {
+                show: true,
+                orient: 'vertical',
+                left: 'right',
+                top: 'center',
+                feature: {
+                    dataView: {readOnly: false},
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            visualMap: {
+                min: minPeople,
+                max: maxPeople,
+//                text: ['高', '低'],
+                type: 'piecewise',
+//                splitNumber: 10,
+                realtime: false,
+                calculable: true,
+                precision: 0,
+//                range: [4, 15],
+                inRange: {
+                    color: ['lightskyblue', 'yellow', 'orangered'],
+                },
+                outOfRange: {
+                    color: ['#9C9C9C', '#643797', 'green', '#CD5C5C', 'red'],
+                },
+
+                textStyle: {
+                    color: '#000'
+                },
+
+                pieces: [
+                    {lt: 0, lte: 1, label: '0 - 1', color: '#f3f3f3'},
+                    {gt: 1, lt: tow, label: '1 - ' + tow, color: '#95cdf6'},
+                    {gt: tow, lt: theer, label: tow + ' - ' + theer, color: '#c4e295'},
+                    {gt: theer, lt: four, label: theer + ' - ' + four, color: '#dced6d'},
+                    {gt: four, lt: five, label: four + ' - ' + five, color: '#f5f857'},
+                    {gt: five, lt: six, label: five + ' - ' + six, color: '#fde94e'},
+                    {gt: six, lt: seven, label: six + ' - ' + seven, color: '#f7c243'},
+                    {gt: seven, lt: eight, label: seven + ' - ' + eight, color: '#f29c38'},
+                    {gt: eight, lt: nine, label: eight + ' - ' + nine, color: '#ef762f'},
+                    {gt: nine, lt: maxPeople, label: nine + ' - ' + maxPeople, color: '#ec5428'},
+                ],
+            },
+            series: [
+                {
+                    name: '人口密度',
+                    type: 'map',
+                    mapType: 'CHINA', // 自定义扩展图表类型
+//                    zoom: 0.8,
+                    itemStyle: {
+                        normal: {
+                            label: {show: true},
+                        },
+                        emphasis: {
+                            label: {show: true},
+                        }
+                    },
+                    data: islist
+                }
+            ]
+        });
+    });
+    if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+    }
+</script>
+</body>
+</html>
